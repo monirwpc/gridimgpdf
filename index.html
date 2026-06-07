@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid Images to PDF</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #f5f4f0;
+    min-height: 100vh;
+    padding: 0;
+    color: #1a1a1a;
+  }
+  .mmi-navbar {
+    background: #fff;
+    border-bottom: 2px solid #185FA5;
+    padding: 10px 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    top: 0;
+    z-index: 100;
+  }
+  .mmi-navbar .mmi-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .mmi-nav-left { display: flex; align-items: center; }
+  .mmi-nav-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #185FA5; color: #fff;
+    font-size: 10px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-right: 7px; flex-shrink: 0;
+  }
+  .mmi-nav-name { color: #185FA5; font-weight: 600; }
+  .mmi-nav-sep { color: #ccc; margin: 0 6px; }
+  .mmi-nav-role { color: #888; }
+  .mmi-nav-right { display: flex; align-items: center; gap: 8px; }
+  .mmi-social-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px; text-decoration: none; transition: opacity 0.15s;
+  }
+  .mmi-social-icon:hover { opacity: 0.7; }
+  .mmi-li-icon { background: #e6f1fb; color: #185FA5; }
+  .mmi-wa-icon { background: #eaf3de; color: #0F6E56; }
+  .mmi-gm-icon { background: #fce8e6; color: #c5221f; }
+  .mmi-main-wrap { padding: 2rem 1rem; }
+  .mmi-container { max-width: 640px; margin: 0 auto; }
+  .mmi-header { text-align: center; margin-bottom: 2.5rem; }
+  .mmi-badge {
+    display: inline-block;
+    background: #eaf3de;
+    color: #3B6D11;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .mmi-header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; color: #111; }
+  .mmi-header p { color: #666; font-size: 0.95rem; margin-top: 0.4rem; }
+  .mmi-card {
+    background: #fff;
+    border: 0.5px solid #e0dfd8;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .mmi-card-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .mmi-drop-zone {
+    border: 1.5px dashed #ccc;
+    border-radius: 8px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .mmi-drop-zone:hover, .mmi-drop-zone.mmi-drag-over { border-color: #378ADD; background: #e6f1fb55; }
+  .mmi-drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .mmi-drop-icon { font-size: 2.5rem; color: #aaa; margin-bottom: 0.75rem; }
+  .mmi-drop-zone p { font-size: 0.9rem; color: #666; }
+  .mmi-drop-zone strong { color: #185FA5; }
+  .mmi-layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mmi-layout-option {
+    border: 1.5px solid #e0dfd8;
+    border-radius: 8px;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    background: #f9f8f5;
+  }
+  .mmi-layout-option:hover { border-color: #378ADD; }
+  .mmi-layout-option.mmi-active { border-color: #185FA5; background: #e6f1fb; }
+  .mmi-layout-preview { display: grid; gap: 2px; width: 52px; margin: 0 auto 6px; }
+  .mmi-layout-cell { background: #ccc; border-radius: 2px; }
+  .mmi-layout-option.mmi-active .mmi-layout-cell { background: #378ADD; }
+  .mmi-layout-label { font-size: 12px; font-weight: 500; color: #666; font-family: 'DM Mono', monospace; }
+  .mmi-layout-option.mmi-active .mmi-layout-label { color: #185FA5; }
+  .mmi-settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .mmi-field label { display: block; font-size: 12px; font-weight: 500; color: #666; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+  .mmi-field input[type=range] { width: 100%; accent-color: #185FA5; }
+  .mmi-field-value { font-size: 13px; font-weight: 500; color: #111; margin-top: 4px; font-family: 'DM Mono', monospace; }
+  .mmi-file-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 1rem;
+  }
+  .mmi-file-thumb {
+    aspect-ratio: 9/16;
+    background: #f5f4f0;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 0.5px solid #e0dfd8;
+  }
+  .mmi-file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .mmi-file-count { font-size: 12px; color: #888; margin-top: 0.75rem; font-family: 'DM Mono', monospace; }
+  .mmi-btn-generate {
+    width: 100%;
+    padding: 0.9rem;
+    background: #185FA5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .mmi-btn-generate:hover { background: #0C447C; }
+  .mmi-btn-generate:active { transform: scale(0.98); }
+  .mmi-btn-generate:disabled { background: #ccc; cursor: not-allowed; }
+  .mmi-progress-wrap { display: none; margin-top: 1rem; }
+  .mmi-progress-bg { height: 6px; background: #eee; border-radius: 99px; overflow: hidden; }
+  .mmi-progress-fill { height: 100%; background: #185FA5; width: 0%; transition: width 0.3s; border-radius: 99px; }
+  .mmi-progress-text { font-size: 12px; color: #888; margin-top: 6px; font-family: 'DM Mono', monospace; }
+  .mmi-download-section {
+    display: none;
+    text-align: center;
+    padding: 1.5rem;
+    background: #eaf3de;
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+  .mmi-download-section p { font-size: 0.9rem; color: #3B6D11; margin-bottom: 0.75rem; font-weight: 500; }
+  .mmi-btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.5rem;
+    background: #0F6E56;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .mmi-btn-download:hover { background: #085041; }
+  .mmi-footer { text-align: center; margin-top: 2rem; font-size: 12px; color: #aaa; font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+
+<nav class="mmi-navbar">
+  <div class="mmi-container">
+    <div class="mmi-nav-left">
+      <div class="mmi-nav-avatar">M</div>
+      <span class="mmi-nav-name">Monir</span>
+      <span class="mmi-nav-sep">·</span>
+      <span class="mmi-nav-role">Software Developer</span>
+    </div>
+    <div class="mmi-nav-right">
+      <a class="mmi-social-icon mmi-li-icon" href="https://www.linkedin.com/in/monirwpc/" target="_blank" title="LinkedIn" aria-label="LinkedIn">
+        <i class="ti ti-brand-linkedin" aria-hidden="true"></i>
+      </a>
+      <a class="mmi-social-icon mmi-gm-icon" href="mailto:codermonir30@gmail.com" title="Gmail" aria-label="Gmail">
+        <i class="ti ti-brand-gmail" aria-hidden="true"></i>
+      </a>
+      <a class="mmi-social-icon mmi-wa-icon" href="https://wa.me/8801796867530" target="_blank" title="WhatsApp" aria-label="WhatsApp">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="mmi-main-wrap">
+<div class="mmi-container">
+
+  <div class="mmi-header">
+    <div class="mmi-badge">free · offline · no upload needed</div>
+    <h1>Grid Images to PDF</h1>
+    <p>Turn any images into a grid PDF</p>
+  </div>
+
+  <div class="mmi-card">
+    <div class="mmi-card-title">01 — select images</div>
+    <div class="mmi-drop-zone" id="mmi-dropZone">
+      <input type="file" id="mmi-fileInput" multiple accept="image/*">
+      <div class="mmi-drop-icon"><i class="ti ti-photo"></i></div>
+      <p><strong>Click to browse</strong> or drag & drop here</p>
+      <p style="font-size:12px;margin-top:4px;">JPG, PNG, WEBP supported</p>
+    </div>
+    <div id="mmi-filePreview" style="display:none;">
+      <div class="mmi-file-list" id="mmi-thumbGrid"></div>
+      <div class="mmi-file-count" id="mmi-fileCount"></div>
+    </div>
+  </div>
+
+  <div class="mmi-card">
+    <div class="mmi-card-title">02 — choose layout</div>
+    <div class="mmi-layout-grid">
+      <div class="mmi-layout-option" data-cols="2" data-rows="2" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:1fr 1fr;">
+          <div class="mmi-layout-cell" style="height:28px;"></div><div class="mmi-layout-cell" style="height:28px;"></div>
+          <div class="mmi-layout-cell" style="height:28px;"></div><div class="mmi-layout-cell" style="height:28px;"></div>
+        </div>
+        <div class="mmi-layout-label">2 × 2</div>
+      </div>
+      <div class="mmi-layout-option mmi-active" data-cols="3" data-rows="2" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="mmi-layout-cell" style="height:20px;"></div><div class="mmi-layout-cell" style="height:20px;"></div><div class="mmi-layout-cell" style="height:20px;"></div>
+          <div class="mmi-layout-cell" style="height:20px;"></div><div class="mmi-layout-cell" style="height:20px;"></div><div class="mmi-layout-cell" style="height:20px;"></div>
+        </div>
+        <div class="mmi-layout-label">3 × 2</div>
+      </div>
+      <div class="mmi-layout-option" data-cols="2" data-rows="3" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:1fr 1fr;">
+          <div class="mmi-layout-cell" style="height:16px;"></div><div class="mmi-layout-cell" style="height:16px;"></div>
+          <div class="mmi-layout-cell" style="height:16px;"></div><div class="mmi-layout-cell" style="height:16px;"></div>
+          <div class="mmi-layout-cell" style="height:16px;"></div><div class="mmi-layout-cell" style="height:16px;"></div>
+        </div>
+        <div class="mmi-layout-label">2 × 3</div>
+      </div>
+      <div class="mmi-layout-option" data-cols="3" data-rows="3" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div>
+          <div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div>
+          <div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div><div class="mmi-layout-cell" style="height:14px;"></div>
+        </div>
+        <div class="mmi-layout-label">3 × 3</div>
+      </div>
+      <div class="mmi-layout-option" data-cols="4" data-rows="2" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:repeat(4,1fr);">
+          <div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div>
+          <div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div><div class="mmi-layout-cell" style="height:18px;"></div>
+        </div>
+        <div class="mmi-layout-label">4 × 2</div>
+      </div>
+      <div class="mmi-layout-option" data-cols="4" data-rows="3" onclick="mmiSelectLayout(this)">
+        <div class="mmi-layout-preview" style="grid-template-columns:repeat(4,1fr);">
+          <div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div>
+          <div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div>
+          <div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div><div class="mmi-layout-cell" style="height:12px;"></div>
+        </div>
+        <div class="mmi-layout-label">4 × 3</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mmi-card">
+    <div class="mmi-card-title">03 — settings</div>
+    <div class="mmi-settings-row">
+      <div class="mmi-field">
+        <label>Page margin</label>
+        <input type="range" id="mmi-marginSlider" min="0" max="60" value="36" step="1">
+        <div class="mmi-field-value" id="mmi-marginVal">36 pt (0.5 inch)</div>
+      </div>
+      <div class="mmi-field">
+        <label>Gap between images</label>
+        <input type="range" id="mmi-gapSlider" min="0" max="40" value="14" step="1">
+        <div class="mmi-field-value" id="mmi-gapVal">14 pt (~20px)</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="mmi-btn-generate" id="mmi-generateBtn" onclick="mmiGeneratePDF()" disabled>
+    <i class="ti ti-file-export"></i> Generate PDF
+  </button>
+
+  <div class="mmi-progress-wrap" id="mmi-progressWrap">
+    <div class="mmi-progress-bg">
+      <div class="mmi-progress-fill" id="mmi-progressFill"></div>
+    </div>
+    <div class="mmi-progress-text" id="mmi-progressText">Processing...</div>
+  </div>
+
+  <div class="mmi-download-section" id="mmi-downloadSection">
+    <p id="mmi-doneText"><i class="ti ti-check"></i> Your PDF is ready!</p>
+    <a class="mmi-btn-download" id="mmi-downloadLink" download="gridimgpdf.pdf">
+      <i class="ti ti-download"></i> Download PDF
+    </a>
+  </div>
+
+  <div class="mmi-footer">Everything runs in your browser — no files are uploaded</div>
+
+</div>
+</div>
+
+<script>
+let mmiFiles = [];
+let mmiCols = 3;
+let mmiRows = 2;
+
+const mmiFileInput = document.getElementById('mmi-fileInput');
+const mmiDropZone = document.getElementById('mmi-dropZone');
+const mmiGenerateBtn = document.getElementById('mmi-generateBtn');
+
+mmiFileInput.addEventListener('change', e => mmiHandleFiles(e.target.files));
+mmiDropZone.addEventListener('dragover', e => { e.preventDefault(); mmiDropZone.classList.add('mmi-drag-over'); });
+mmiDropZone.addEventListener('dragleave', () => mmiDropZone.classList.remove('mmi-drag-over'));
+mmiDropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  mmiDropZone.classList.remove('mmi-drag-over');
+  if (e.dataTransfer.files.length) mmiHandleFiles(e.dataTransfer.files);
+});
+
+function mmiHandleFiles(rawFiles) {
+  mmiFiles = Array.from(rawFiles).filter(f => f.type.startsWith('image/'));
+  mmiFiles.sort((a, b) => a.name.localeCompare(b.name));
+  const thumbGrid = document.getElementById('mmi-thumbGrid');
+  const filePreview = document.getElementById('mmi-filePreview');
+  thumbGrid.innerHTML = '';
+  mmiFiles.slice(0, 40).forEach(file => {
+    const div = document.createElement('div');
+    div.className = 'mmi-file-thumb';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    div.appendChild(img);
+    thumbGrid.appendChild(div);
+  });
+  document.getElementById('mmi-fileCount').textContent =
+    mmiFiles.length + ' images selected' + (mmiFiles.length > 40 ? ' (showing first 40)' : '');
+  filePreview.style.display = 'block';
+  mmiGenerateBtn.disabled = false;
+  document.getElementById('mmi-downloadSection').style.display = 'none';
+}
+
+function mmiSelectLayout(el) {
+  document.querySelectorAll('.mmi-layout-option').forEach(o => o.classList.remove('mmi-active'));
+  el.classList.add('mmi-active');
+  mmiCols = parseInt(el.dataset.cols);
+  mmiRows = parseInt(el.dataset.rows);
+}
+
+document.getElementById('mmi-marginSlider').addEventListener('input', function() {
+  const v = parseInt(this.value);
+  document.getElementById('mmi-marginVal').textContent = v + ' pt (' + (v/72).toFixed(2) + ' inch)';
+});
+
+document.getElementById('mmi-gapSlider').addEventListener('input', function() {
+  const v = parseInt(this.value);
+  document.getElementById('mmi-gapVal').textContent = v + ' pt (~' + Math.round(v * 1.33) + 'px)';
+});
+
+async function mmiGeneratePDF() {
+  if (!mmiFiles.length) return;
+  const margin = parseInt(document.getElementById('mmi-marginSlider').value);
+  const gap = parseInt(document.getElementById('mmi-gapSlider').value);
+  const cols = mmiCols, rows = mmiRows;
+  const perPage = cols * rows;
+
+  mmiGenerateBtn.disabled = true;
+  const progressWrap = document.getElementById('mmi-progressWrap');
+  const progressFill = document.getElementById('mmi-progressFill');
+  const progressText = document.getElementById('mmi-progressText');
+  progressWrap.style.display = 'block';
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+  const pageW = 595.28, pageH = 841.89;
+  const cellW = (pageW - 2*margin - gap*(cols-1)) / cols;
+  const cellH = (pageH - 2*margin - gap*(rows-1)) / rows;
+
+  for (let i = 0; i < mmiFiles.length; i++) {
+    progressFill.style.width = Math.round((i / mmiFiles.length) * 100) + '%';
+    progressText.textContent = 'Processing ' + (i+1) + ' / ' + mmiFiles.length + '...';
+
+    const posInPage = i % perPage;
+    if (i > 0 && posInPage === 0) doc.addPage();
+
+    const col = posInPage % cols;
+    const row = Math.floor(posInPage / cols);
+    const cx = margin + col * (cellW + gap);
+    const cy = margin + row * (cellH + gap);
+
+    try {
+      const dataUrl = await mmiToDataURL(mmiFiles[i]);
+      const dims = await mmiGetDims(dataUrl);
+      const ratio = Math.min(cellW / dims.w, cellH / dims.h);
+      const dw = dims.w * ratio, dh = dims.h * ratio;
+      const dx = cx + (cellW - dw) / 2, dy = cy + (cellH - dh) / 2;
+      const fmt = mmiFiles[i].type === 'image/png' ? 'PNG' : 'JPEG';
+      doc.addImage(dataUrl, fmt, dx, dy, dw, dh);
+    } catch(e) { console.error(e); }
+  }
+
+  progressFill.style.width = '100%';
+  progressText.textContent = 'Done!';
+
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const dl = document.getElementById('mmi-downloadLink');
+  dl.href = url;
+  const pages = Math.ceil(mmiFiles.length / perPage);
+  document.getElementById('mmi-doneText').innerHTML =
+    '<i class="ti ti-check"></i> PDF ready — ' + pages + ' pages, ' + mmiFiles.length + ' images';
+  document.getElementById('mmi-downloadSection').style.display = 'block';
+  mmiGenerateBtn.disabled = false;
+  setTimeout(() => { progressWrap.style.display = 'none'; }, 1500);
+}
+
+function mmiToDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function mmiGetDims(dataUrl) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+    img.src = dataUrl;
+  });
+}
+</script>
+</body>
+</html>
