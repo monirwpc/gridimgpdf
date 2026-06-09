@@ -103,6 +103,8 @@ This project is open source and available under the [MIT License](LICENSE).
 - 💼 [LinkedIn](https://www.linkedin.com/in/monirwpc/)
 - 💬 [WhatsApp](https://wa.me/8801796867530)
 
+- Linkedin Recommendation Post by Someone: https://www.linkedin.com/pulse/he-best-tools-come-from-real-frustration-grid-images-pdf-%EC%84%9C%EC%A7%80%ED%95%9C-%EA%B3%A0%EB%93%B1%ED%95%99%EC%83%9D-bboic/
+
 ---
 
 *Built with care. Free to use. Free to share.*
